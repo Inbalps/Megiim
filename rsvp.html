@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<!-- מגיעים © כל הזכויות שמורות · מזהה רישיון: UNLICENSED · רישיון שימוש אישי בלבד, אסור להעתיק, להעביר או להפיץ -->
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#faf7f1;
+    --ink:#26313d;
+    --ink-soft:#6b7683;
+    --brass:#9a7b3f;
+    --brass-soft:#f0e7d6;
+    --yes:#166a45;
+    --yes-soft:#e2f0e7;
+    --no:#8f3b36;
+    --line:#e5ded1;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Assistant',system-ui,-apple-system,'Segoe UI',sans-serif;
+    font-size:19px;
+    line-height:1.55;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:520px;margin:0 auto;padding:0 20px 64px;}
+
+  .hero{margin:0 -20px 24px;text-align:center;}
+  .hero img{
+    width:100%;max-height:38vh;object-fit:contain;display:block;
+    cursor:zoom-in;
+  }
+  .hero .zoom{
+    display:block;margin-top:8px;font-size:15px;color:var(--ink-soft);
+    text-decoration:none;
+  }
+
+  .dock{
+    position:fixed;inset-inline:0;bottom:0;z-index:20;
+    background:var(--paper);
+    border-top:1px solid var(--line);
+    box-shadow:0 -6px 18px rgba(38,49,61,.07);
+    padding:12px 20px calc(12px + env(safe-area-inset-bottom));
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  }
+  .dock button{min-height:58px;font-size:18px;}
+  body.has-dock .wrap{padding-bottom:130px;}
+
+  .crest{
+    text-align:center;
+    padding:44px 0 30px;
+  }
+  .crest .mark{
+    display:inline-block;width:44px;height:1px;background:var(--brass);
+    margin-bottom:22px;opacity:.7;
+  }
+  .crest h1{
+    margin:0;
+    font-size:33px;
+    font-weight:700;
+    letter-spacing:-.01em;
+    line-height:1.25;
+  }
+  .greeting{
+    margin:10px 0 0;
+    font-size:21px;
+    color:var(--ink-soft);
+  }
+
+  .facts{
+    border-block:1px solid var(--line);
+    padding:22px 4px;
+    margin:0 0 12px;
+  }
+  .fact{display:flex;gap:14px;align-items:baseline;padding:7px 0;}
+  .fact dt{
+    flex:0 0 74px;
+    color:var(--ink-soft);
+    font-size:17px;
+  }
+  .fact dd{margin:0;font-weight:600;}
+  .fact dd .addr{display:block;font-weight:400;color:var(--ink-soft);font-size:17px;}
+
+
+  .ask{margin:0 0 16px;font-size:23px;font-weight:700;text-align:center;}
+
+  .choice{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  button{
+    font-family:inherit;font-size:19px;font-weight:600;
+    border-radius:12px;cursor:pointer;
+    min-height:62px;
+    transition:background .15s,border-color .15s;
+  }
+  button:focus-visible{outline:3px solid var(--brass);outline-offset:2px;}
+  .btn-yes{background:var(--yes);color:#fff;border:1px solid var(--yes);}
+  .btn-no{background:transparent;color:var(--no);border:1px solid #d9c9c6;}
+  .btn-yes[aria-pressed="true"]{box-shadow:inset 0 0 0 3px rgba(255,255,255,.45);}
+  .btn-no[aria-pressed="true"]{background:#f6eceb;border-color:var(--no);}
+
+  .count{
+    margin-top:22px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px 18px;
+    background:#fff;
+  }
+  .count h2{margin:0 0 16px;font-size:21px;font-weight:700;text-align:center;}
+  .stepper{display:flex;align-items:center;justify-content:center;gap:16px;}
+  .stepper button{
+    width:56px;height:56px;min-height:56px;font-size:27px;font-weight:400;
+    border:1px solid var(--line);background:var(--paper);color:var(--ink);
+    border-radius:50%;line-height:1;
+  }
+  .stepper input{
+    width:92px;height:60px;text-align:center;
+    font-family:inherit;font-size:29px;font-weight:700;color:var(--ink);
+    border:1px solid var(--line);border-radius:12px;background:var(--paper);
+  }
+  .stepper input:focus{outline:2px solid var(--brass);}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block;margin-bottom:6px;font-size:17px;color:var(--ink-soft);}
+  .field input{
+    width:100%;height:56px;padding:0 14px;
+    font-family:inherit;font-size:19px;color:var(--ink);
+    border:1px solid var(--line);border-radius:12px;background:#fff;
+  }
+  .field input:focus{outline:2px solid var(--brass);}
+
+  .send{
+    width:100%;margin-top:20px;min-height:64px;font-size:20px;
+    background:var(--yes);color:#fff;border:none;
+  }
+  .send:disabled{background:#c3ccc7;cursor:default;}
+
+  .note{margin-top:12px;font-size:16px;color:var(--ink-soft);text-align:center;min-height:22px;}
+  .note.bad{color:var(--no);font-weight:600;}
+
+  .answered{
+    background:var(--yes-soft);
+    border-radius:14px;
+    padding:26px 20px;
+    text-align:center;
+  }
+  .answered.declined{background:#f6eceb;}
+  .answered p{margin:0;font-size:21px;font-weight:600;}
+  .answered .sub{margin-top:6px;font-size:18px;font-weight:400;color:var(--ink-soft);}
+  .link-btn{
+    background:none;border:none;color:var(--brass);
+    font-size:18px;font-weight:600;text-decoration:underline;
+    margin-top:16px;min-height:44px;padding:0;
+  }
+
+  .nav{margin-top:34px;display:grid;gap:10px;}
+  .nav a{
+    display:block;text-align:center;text-decoration:none;
+    border:1px solid var(--line);border-radius:12px;
+    padding:17px;color:var(--ink);font-weight:600;background:#fff;
+  }
+
+  .closed{
+    background:#fff;border:1px solid var(--line);border-radius:14px;
+    padding:22px;text-align:center;color:var(--ink-soft);
+  }
+  .hidden{display:none;}
+
+  @media (prefers-reduced-motion:no-preference){
+    .reveal{animation:in .28s ease-out;}
+    @keyframes in{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+  var D = <?!= payload ?>;
+
+  function esc(s){
+    return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  var app = document.getElementById('app');
+
+  if (D.error){
+    app.innerHTML =
+      '<div class="crest"><span class="mark"></span><h1>הקישור אינו תקין</h1>' +
+      '<p class="greeting">' + esc(D.error) + '</p></div>';
+  } else {
+    render();
+  }
+
+  function facts(){
+    var h = '<dl class="facts">';
+    if (D.date) h += '<div class="fact"><dt>מתי</dt><dd>' + esc(D.date) + (D.time ? ', ' + esc(D.time) : '') + '</dd></div>';
+    if (D.venue || D.address) h += '<div class="fact"><dt>איפה</dt><dd>' + esc(D.venue) +
+      (D.address ? '<span class="addr">' + esc(D.address) + '</span>' : '') + '</dd></div>';
+    return h + '</dl>';
+  }
+
+  function navLinks(){
+    if (!D.waze && !D.gmaps) return '';
+    var h = '<div class="nav">';
+    if (D.waze)  h += '<a href="' + esc(D.waze)  + '" target="_blank" rel="noopener">ניווט בוויז</a>';
+    if (D.gmaps) h += '<a href="' + esc(D.gmaps) + '" target="_blank" rel="noopener">ניווט בגוגל מפות</a>';
+    return h + '</div>';
+  }
+
+  function header(){
+    return (D.image
+        ? '<div class="hero"><a href="' + esc(D.image) + '" target="_blank" rel="noopener">' +
+          '<img src="' + esc(D.image) + '" alt="ההזמנה"></a>' +
+          '<a class="zoom" href="' + esc(D.image) + '" target="_blank" rel="noopener">לחצו על ההזמנה להגדלה</a></div>'
+        : '') +
+      '<div class="crest"><span class="mark"></span><h1>' + esc(D.title) + '</h1>' +
+      (D.name && D.mode !== 'join' ? '<p class="greeting">שלום ' + esc(D.name) + '</p>' : '') +
+      '</div>' + facts();
+  }
+
+  function removeDock(){
+    var d = document.getElementById('dock');
+    if (d) d.remove();
+    document.body.classList.remove('has-dock');
+  }
+
+  function render(){
+    removeDock();
+
+    if (D.mode === 'join'){
+      if (D.locked){
+        app.innerHTML = header() +
+          '<div class="closed">רשימת האורחים נסגרה. לשינויים אנא צרו קשר עם המשפחה.</div>' + navLinks();
+      } else {
+        showJoin();
+      }
+      return;
+    }
+
+    var answered = (D.status === 'אישרו' || D.status === 'לא מגיעים');
+
+    if (D.locked){
+      app.innerHTML = header() +
+        '<div class="closed">' +
+        (answered
+          ? 'התשובה שלכם נשמרה: ' + (D.status === 'אישרו' ? esc(D.coming) + ' אורחים' : 'לא מגיעים') + '.<br>'
+          : '') +
+        'רשימת האורחים נסגרה. לשינויים אנא צרו קשר עם המשפחה.</div>' + navLinks();
+      return;
+    }
+
+    if (answered){ showAnswered(); return; }
+    showForm();
+  }
+
+  function showAnswered(){
+    removeDock();
+    var yes = D.status === 'אישרו';
+    app.innerHTML = header() +
+      '<div class="answered' + (yes ? '' : ' declined') + '">' +
+      '<p>' + (yes ? 'רשמנו אתכם 🤍' : 'רשמנו, תודה שהודעתם') + '</p>' +
+      '<div class="sub">' + (yes ? 'מגיעים ' + esc(D.coming) + ' אורחים' : 'סימנתם שלא תוכלו להגיע') + '</div>' +
+      (D.mode === 'join'
+        ? '<div class="sub" style="margin-top:10px">לשינוי אנא פנו למשפחה</div>'
+        : '<button class="link-btn" id="change">שינוי התשובה</button>') +
+      '</div>' + navLinks();
+    var ch = document.getElementById('change');
+    if (ch) ch.onclick = showForm;
+  }
+
+  function showForm(){
+    var start = (D.status === 'אישרו' && D.coming) ? D.coming : 1;
+    app.innerHTML = header() +
+      '<p class="ask">תוכלו להגיע?</p>' +
+      '<div class="choice">' +
+        '<button class="btn-yes" id="yes" aria-pressed="false">מגיעים 🤍</button>' +
+        '<button class="btn-no"  id="no"  aria-pressed="false">לא נוכל להגיע</button>' +
+      '</div>' +
+      '<div class="count hidden" id="countBox">' +
+        '<h2>כמה תהיו?</h2>' +
+        '<div class="stepper">' +
+          '<button id="minus" aria-label="פחות אחד">−</button>' +
+          '<input id="num" inputmode="numeric" autocomplete="off" value="' + esc(start) + '" aria-label="מספר האורחים">' +
+          '<button id="plus" aria-label="עוד אחד">+</button>' +
+        '</div>' +
+        '<button class="send" id="send">שליחת האישור</button>' +
+        '<div class="note" id="note"></div>' +
+      '</div>' +
+      '<div class="note" id="topnote"></div>' +
+      navLinks();
+
+    var box = document.getElementById('countBox');
+    var num = document.getElementById('num');
+    var note = document.getElementById('note');
+    var send = document.getElementById('send');
+    var yesB = document.getElementById('yes');
+    var noB  = document.getElementById('no');
+
+    function clean(){
+      var v = num.value.replace(/\D/g,'').replace(/^0+(?=\d)/,'');
+      if (v.length > 2) v = v.slice(0,2);
+      if (v !== '' && parseInt(v,10) > 20){ v = '20'; say('מקסימום 20 אורחים. ליותר מזה, אנא צרו קשר ישירות.'); }
+      num.value = v;
+      var n = parseInt(v || '0', 10);
+      send.disabled = !(n >= 1);
+      if (v === '' || n === 0) say('יש להזין לפחות אורח אחד'); else if (n <= 20 && note.textContent.indexOf('מקסימום') === -1) say('');
+    }
+    function say(t){ note.textContent = t; note.className = 'note' + (t ? ' bad' : ''); }
+    function step(d){ num.value = String(Math.min(20, Math.max(1, (parseInt(num.value||'0',10) || 0) + d))); clean(); }
+
+    num.addEventListener('keydown', function(e){
+      if (e.metaKey || e.ctrlKey) return;
+      if (e.key && e.key.length === 1 && !/\d/.test(e.key)) e.preventDefault();
+    });
+    num.addEventListener('input', clean);
+    num.addEventListener('paste', function(){ setTimeout(clean, 0); });
+    document.getElementById('minus').onclick = function(){ step(-1); };
+    document.getElementById('plus').onclick  = function(){ step(1); };
+
+    yesB.onclick = function(){
+      yesB.setAttribute('aria-pressed','true');
+      noB.setAttribute('aria-pressed','false');
+      box.classList.remove('hidden');
+      box.classList.add('reveal');
+      clean();
+    };
+
+    noB.onclick = function(){
+      if (!confirm('לסמן שלא תוכלו להגיע?')) return;
+      noB.setAttribute('aria-pressed','true');
+      yesB.setAttribute('aria-pressed','false');
+      box.classList.add('hidden');
+      submit(false, 0, noB, 'לא נוכל להגיע');
+    };
+
+    send.onclick = function(){
+      clean();
+      if (send.disabled) return;
+      submit(true, num.value, send, 'שליחת האישור');
+    };
+
+    buildDock(yesB, noB, box);
+  }
+
+  function showJoin(){
+    app.innerHTML = header() +
+      '<p class="ask">מגיעים? נשמח לדעת</p>' +
+      '<div class="count">' +
+        '<div class="field"><label for="jname">השם שלכם</label>' +
+          '<input id="jname" autocomplete="name" placeholder="שם ושם משפחה"></div>' +
+        '<div class="field"><label for="jphone">טלפון</label>' +
+          '<input id="jphone" inputmode="tel" autocomplete="tel" placeholder="0501234567"></div>' +
+        '<div class="field"><label for="jnum">כמה תהיו?</label>' +
+          '<div class="stepper">' +
+            '<button id="jminus" type="button" aria-label="פחות אחד">−</button>' +
+            '<input id="jnum" inputmode="numeric" autocomplete="off" value="1" aria-label="מספר האורחים">' +
+            '<button id="jplus" type="button" aria-label="עוד אחד">+</button>' +
+          '</div></div>' +
+        '<button class="send" id="jsend">אישור הגעה</button>' +
+        '<button class="link-btn" id="jno" style="display:block;margin:14px auto 0">לא נוכל להגיע</button>' +
+        '<div class="note" id="note"></div>' +
+      '</div>' + navLinks();
+
+    var name  = document.getElementById('jname');
+    var phone = document.getElementById('jphone');
+    var num   = document.getElementById('jnum');
+    var note  = document.getElementById('note');
+    var send  = document.getElementById('jsend');
+
+    function say(t){ note.textContent = t || ''; note.className = 'note' + (t ? ' bad' : ''); }
+
+    function cleanNum(){
+      var v = num.value.replace(/\D/g,'').replace(/^0+(?=\d)/,'');
+      if (v.length > 2) v = v.slice(0,2);
+      if (v !== '' && parseInt(v,10) > 20){ v = '20'; say('מקסימום 20 אורחים. ליותר מזה, אנא צרו קשר ישירות.'); }
+      num.value = v;
+    }
+    num.addEventListener('keydown', function(e){
+      if (e.metaKey || e.ctrlKey) return;
+      if (e.key && e.key.length === 1 && !/\d/.test(e.key)) e.preventDefault();
+    });
+    num.addEventListener('input', cleanNum);
+    document.getElementById('jminus').onclick = function(){ num.value = String(Math.max(1,(parseInt(num.value||'1',10)||1)-1)); cleanNum(); };
+    document.getElementById('jplus').onclick  = function(){ num.value = String(Math.min(20,(parseInt(num.value||'0',10)||0)+1)); cleanNum(); };
+
+    phone.addEventListener('input', function(){
+      phone.value = phone.value.replace(/[^\d+\-() ]/g,'');
+    });
+
+    function valid(){
+      if (name.value.trim().length < 2){ say('נשמח לשם מלא'); name.focus(); return false; }
+      if (phone.value.replace(/\D/g,'').length < 9){ say('מספר הטלפון אינו תקין'); phone.focus(); return false; }
+      say('');
+      return true;
+    }
+
+    send.onclick = function(){
+      cleanNum();
+      if (!valid()) return;
+      if (!(parseInt(num.value||'0',10) >= 1)){ say('יש להזין לפחות אורח אחד'); return; }
+      sendJoin(true, num.value, send, 'אישור הגעה');
+    };
+
+    document.getElementById('jno').onclick = function(){
+      if (name.value.trim().length < 2){ say('נשמח לשם מלא, כדי שנדע מי'); name.focus(); return; }
+      if (phone.value.replace(/\D/g,'').length < 9){ say('מספר הטלפון אינו תקין'); phone.focus(); return; }
+      if (!confirm('לסמן שלא תוכלו להגיע?')) return;
+      sendJoin(false, 0, document.getElementById('jno'), 'לא נוכל להגיע');
+    };
+
+    function sendJoin(attending, count, btn, label){
+      btn.disabled = true;
+      btn.textContent = 'שולח…';
+      google.script.run
+        .withSuccessHandler(function(res){
+          if (res && res.ok){
+            D.status = attending ? 'אישרו' : 'לא מגיעים';
+            D.coming = res.count;
+            window.scrollTo(0,0);
+            showAnswered();
+          } else {
+            btn.disabled = false; btn.textContent = label;
+            say((res && res.message) || 'לא הצלחנו לשמור. נסו שוב.');
+          }
+        })
+        .withFailureHandler(function(){
+          btn.disabled = false; btn.textContent = label;
+          say('אין חיבור כרגע. נסו שוב בעוד רגע.');
+        })
+        .joinRsvp(name.value, phone.value, attending, count, D.group || '');
+    }
+  }
+
+  function buildDock(yesB, noB, box){
+    removeDock();
+    var dock = document.createElement('div');
+    dock.className = 'dock';
+    dock.id = 'dock';
+    dock.innerHTML =
+      '<button class="btn-yes" type="button">מגיעים 🤍</button>' +
+      '<button class="btn-no" type="button">לא נוכל להגיע</button>';
+    document.body.appendChild(dock);
+    document.body.classList.add('has-dock');
+
+    var btns = dock.getElementsByTagName('button');
+    btns[0].onclick = function(){
+      yesB.click();
+      box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      removeDock();
+    };
+    btns[1].onclick = function(){ noB.click(); };
+
+    var choice = document.querySelector('.choice');
+    if (window.IntersectionObserver && choice){
+      new IntersectionObserver(function(entries){
+        var d = document.getElementById('dock');
+        if (!d) return;
+        var visible = entries[0].isIntersecting;
+        d.style.display = visible ? 'none' : 'grid';
+        document.body.classList.toggle('has-dock', !visible);
+      }, { threshold: .6 }).observe(choice);
+    }
+  }
+
+  function submit(attending, count, btn, label){
+    btn.disabled = true;
+    btn.textContent = 'שולח…';
+    google.script.run
+      .withSuccessHandler(function(res){
+        if (res && res.ok){
+          D.status = attending ? 'אישרו' : 'לא מגיעים';
+          D.coming = res.count;
+          window.scrollTo(0,0);
+          showAnswered();
+        } else {
+          btn.disabled = false; btn.textContent = label;
+          var n = document.getElementById('note') || document.getElementById('topnote');
+          n.textContent = (res && res.message) || 'לא הצלחנו לשמור. נסו שוב.';
+          n.className = 'note bad';
+        }
+      })
+      .withFailureHandler(function(){
+        btn.disabled = false; btn.textContent = label;
+        var n = document.getElementById('note') || document.getElementById('topnote');
+        n.textContent = 'אין חיבור כרגע. נסו שוב בעוד רגע.';
+        n.className = 'note bad';
+      })
+      .submitRsvp(D.code, attending, count);
+  }
+</script>
+</body>
+</html>

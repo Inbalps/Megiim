@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<!-- מגיעים © כל הזכויות שמורות · מזהה רישיון: UNLICENSED · רישיון שימוש אישי בלבד, אסור להעתיק, להעביר או להפיץ -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>רשימת שליחה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #E9EDF2;
+    --surface: #FFFFFF;
+    --ink: #16202B;
+    --muted: #64737F;
+    --line: #D7DEE6;
+    --go: #2F6F5E;
+    --go-dark: #245646;
+    --done: #8A9AA6;
+    --warn: #A8621F;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 24px 16px 64px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: Assistant, "Segoe UI", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    direction: rtl;
+  }
+
+  .wrap { max-width: 720px; margin: 0 auto; }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .sub { color: var(--muted); margin: 0 0 24px; }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 130px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    direction: ltr;
+    text-align: left;
+    resize: vertical;
+    color: var(--ink);
+  }
+
+  textarea:focus, button:focus-visible, input:focus-visible {
+    outline: 2px solid var(--go);
+    outline-offset: 2px;
+  }
+
+  .row-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  button {
+    font-family: inherit;
+    font-size: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    padding: 9px 16px;
+    cursor: pointer;
+  }
+
+  button:hover { background: #F2F5F8; }
+
+  .primary {
+    background: var(--go);
+    border-color: var(--go);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .primary:hover { background: var(--go-dark); }
+
+  .progress-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+
+  .count { font-size: 22px; font-weight: 700; }
+  .count small { font-weight: 400; color: var(--muted); font-size: 15px; }
+
+  .bar {
+    height: 6px;
+    background: var(--line);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .bar span {
+    display: block;
+    height: 100%;
+    background: var(--go);
+    width: 0;
+    transition: width .25s ease;
+  }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 14px 0 10px;
+  }
+
+  .filters input[type=search] {
+    flex: 1;
+    min-width: 140px;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 15px;
+  }
+
+  .chip {
+    padding: 7px 13px;
+    font-size: 14px;
+    border-radius: 99px;
+  }
+
+  .chip[aria-pressed="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+  }
+
+  ol { list-style: none; margin: 0; padding: 0; }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    margin-bottom: 7px;
+  }
+
+  li.sent { background: #F4F6F8; border-color: #E3E9EE; }
+  li.sent .name { color: var(--done); text-decoration: line-through; }
+  li.sent .phone { color: #A5B1BB; }
+
+  .who { flex: 1; min-width: 0; }
+  .name { font-weight: 600; display: block; }
+  .phone { color: var(--muted); font-size: 13px; direction: ltr; text-align: right; }
+
+  .tick {
+    width: 22px; height: 22px;
+    flex: none;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    cursor: pointer;
+    padding: 0;
+    color: var(--go);
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  li.sent .tick { background: var(--go); border-color: var(--go); color: #fff; }
+
+  .send { flex: none; }
+
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 28px 12px;
+  }
+
+  .note {
+    font-size: 14px;
+    color: var(--muted);
+    margin: 4px 0 0;
+  }
+
+  .note strong { color: var(--warn); font-weight: 600; }
+
+  .hidden { display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bar span { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1>רשימת שליחה</h1>
+  <p class="sub">הדביקי את הלינקים, ושלחי אחד אחרי השני בלי לאבד את המקום.</p>
+
+  <div class="panel" id="input-panel">
+    <textarea id="raw" placeholder="לינק בכל שורה.
+אפשר גם: שם, לינק"></textarea>
+    <div class="row-controls">
+      <button class="primary" id="load">טעינת הרשימה</button>
+      <label style="display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted)">
+        <input type="checkbox" id="mobile-mode"> אני שולחת מהטלפון
+      </label>
+    </div>
+    <p class="note" id="parse-note"></p>
+  </div>
+
+  <div class="panel hidden" id="list-panel">
+    <div class="progress-head">
+      <div class="count"><span id="sent-count">0</span> <small>מתוך <span id="total-count">0</span> נשלחו</small></div>
+      <button id="reopen">רשימה חדשה</button>
+    </div>
+    <div class="bar"><span id="bar-fill"></span></div>
+
+    <div class="filters">
+      <input type="search" id="search" placeholder="חיפוש שם או מספר">
+      <button class="chip" id="filter-pending" aria-pressed="false">רק מי שטרם קיבל</button>
+    </div>
+
+    <ol id="list"></ol>
+    <p class="empty hidden" id="empty">אין נמענים שמתאימים לסינון.</p>
+  </div>
+</div>
+
+<script>
+const KEY = 'wa-invite-runner';
+let people = [];
+let sent = new Set();
+let pendingOnly = false;
+let query = '';
+let mobile = false;
+
+const $ = id => document.getElementById(id);
+
+/* ---------- שמירת התקדמות · progress storage ---------- */
+function save() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify({ people, sent: [...sent], mobile }));
+  } catch (e) { /* גלישה פרטית: נשמר בזיכרון בלבד */ }
+}
+
+function load() {
+  let raw = null;
+  try { raw = localStorage.getItem(KEY); } catch (e) { return; }
+  if (!raw) return;
+  try {
+    const data = JSON.parse(raw);
+    if (data.people && data.people.length) {
+      people = data.people;
+      sent   = new Set(data.sent || []);
+      mobile = !!data.mobile;
+      $('mobile-mode').checked = mobile;
+      showList();
+    }
+  } catch (e) { /* נתונים פגומים */ }
+}
+
+function clearSaved() {
+  try { localStorage.removeItem(KEY); } catch (e) {}
+}
+
+/* ---------- parsing ---------- */
+function decode(s) {
+  try { return decodeURIComponent(s.replace(/\+/g, ' ')); }
+  catch (e) { return s; }
+}
+
+function phoneFrom(url) {
+  let m = url.match(/[?&]phone=(\d+)/);
+  if (m) return m[1];
+  m = url.match(/wa\.me\/(\d+)/);
+  return m ? m[1] : '';
+}
+
+function textFrom(url) {
+  const m = url.match(/[?&]text=([^&]*)/);
+  return m ? decode(m[1]) : '';
+}
+
+// חילוץ השם מפתיחה כמו "היי דנה" · extract name from the greeting line
+function nameFrom(body) {
+  const first = (body.split('\n')[0] || '').trim();
+  const m = first.match(/^(?:היי|הי|שלום|אהלן|הייי)\s+(.+)$/);
+  if (!m) return '';
+  return m[1]
+    .replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\uFE0F\u200D]/gu, '')
+    .replace(/[!,.:;־–—-]+$/, '')
+    .trim();
+}
+
+function parse(raw) {
+  const out = [];
+  const seen = new Set();
+  for (const line of raw.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const m = trimmed.match(/https?:\/\/\S+/);
+    if (!m) continue;
+    const url = m[0];
+    const phone = phoneFrom(url);
+    if (!phone || seen.has(phone)) continue;
+    seen.add(phone);
+    const prefix = trimmed.slice(0, m.index).trim().replace(/[,;\t|]+$/, '').trim();
+    out.push({
+      phone,
+      name: prefix || nameFrom(textFrom(url)) || '',
+      text: textFrom(url)
+    });
+  }
+  return out;
+}
+
+function linkFor(p) {
+  const body = encodeURIComponent(p.text);
+  return mobile
+    ? `https://wa.me/${p.phone}?text=${body}`
+    : `https://web.whatsapp.com/send?phone=${p.phone}&text=${body}`;
+}
+
+/* ---------- rendering ---------- */
+function visible() {
+  const q = query.trim().toLowerCase();
+  return people.filter(p => {
+    if (pendingOnly && sent.has(p.phone)) return false;
+    if (!q) return true;
+    return p.name.toLowerCase().includes(q) || p.phone.includes(q);
+  });
+}
+
+function render() {
+  const list = $('list');
+  list.textContent = '';
+  const rows = visible();
+
+  $('empty').classList.toggle('hidden', rows.length > 0);
+
+  for (const p of rows) {
+    const isSent = sent.has(p.phone);
+    const li = document.createElement('li');
+    if (isSent) li.className = 'sent';
+
+    const tick = document.createElement('button');
+    tick.className = 'tick';
+    tick.textContent = isSent ? '✓' : '';
+    tick.setAttribute('aria-label', isSent ? 'סימון כלא נשלח' : 'סימון כנשלח');
+    tick.onclick = () => toggle(p.phone);
+
+    const who = document.createElement('div');
+    who.className = 'who';
+    const name = document.createElement('span');
+    name.className = 'name';
+    name.textContent = p.name || 'ללא שם';
+    const phone = document.createElement('div');
+    phone.className = 'phone';
+    phone.textContent = p.phone;
+    who.append(name, phone);
+
+    const send = document.createElement('a');
+    send.className = 'send';
+    send.href = linkFor(p);
+    send.target = '_blank';
+    send.rel = 'noopener';
+    send.innerHTML = '<button class="primary">פתיחת השיחה</button>';
+    send.onclick = () => { if (!sent.has(p.phone)) toggle(p.phone); };
+
+    li.append(tick, who, send);
+    list.append(li);
+  }
+
+  $('sent-count').textContent = sent.size;
+  $('total-count').textContent = people.length;
+  $('bar-fill').style.width = people.length
+    ? (sent.size / people.length * 100) + '%'
+    : '0%';
+}
+
+function toggle(phone) {
+  sent.has(phone) ? sent.delete(phone) : sent.add(phone);
+  save();
+  render();
+}
+
+function showList() {
+  $('input-panel').classList.add('hidden');
+  $('list-panel').classList.remove('hidden');
+  render();
+}
+
+/* ---------- events ---------- */
+$('load').onclick = () => {
+  const parsed = parse($('raw').value);
+  if (!parsed.length) {
+    $('parse-note').innerHTML = '<strong>לא נמצאו לינקים תקינים.</strong> כל שורה צריכה להכיל כתובת שמתחילה ב-http ומכילה מספר טלפון.';
+    return;
+  }
+  people = parsed;
+  sent = new Set();
+  mobile = $('mobile-mode').checked;
+  save();
+  showList();
+};
+
+$('mobile-mode').onchange = e => { mobile = e.target.checked; save(); render(); };
+
+$('search').oninput = e => { query = e.target.value; render(); };
+
+$('filter-pending').onclick = e => {
+  pendingOnly = !pendingOnly;
+  e.currentTarget.setAttribute('aria-pressed', String(pendingOnly));
+  render();
+};
+
+$('reopen').onclick = () => {
+  if (sent.size && !confirm('הרשימה הנוכחית והסימונים יימחקו. להמשיך?')) return;
+  people = []; sent = new Set(); query = ''; pendingOnly = false;
+  $('raw').value = ''; $('search').value = '';
+  $('filter-pending').setAttribute('aria-pressed', 'false');
+  $('parse-note').textContent = '';
+  $('list-panel').classList.add('hidden');
+  $('input-panel').classList.remove('hidden');
+  save();
+};
+
+load();
+</script>
+</body>
+</html>
